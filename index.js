@@ -40,7 +40,11 @@ app.get("/", (req, res) => {
 
 app.get("/api/users", async (req, res) => {
   const users = await User.find().lean().exec();
-  res.send(users.map((user) => user.username));
+  res.send(
+    users.map((user) => {
+      return { _id: user._id, username: user.username };
+    })
+  );
 });
 
 app.post("/api/users", async (req, res) => {
