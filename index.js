@@ -38,6 +38,11 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
+app.get("/api/users", async (req, res) => {
+  const users = await User.find().lean().exec();
+  res.send(users.map((user) => user.username));
+});
+
 app.post("/api/users", async (req, res) => {
   const { username } = req.body;
   // const existing = await User.findOne({ name: username }).exec();
