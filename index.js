@@ -40,7 +40,7 @@ app.get("/", (req, res) => {
 
 app.get("/api/users", async (req, res) => {
   const users = await User.find().lean().exec();
-  res.send(
+  res.json(
     users.map((user) => {
       return { _id: user._id, username: user.username };
     })
