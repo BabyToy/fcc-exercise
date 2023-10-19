@@ -8,7 +8,7 @@ export const exerciseSchema = new mongoose.Schema({
 });
 
 export const userSchema = new mongoose.Schema({
-  username: String,
+  username: { type: String, unique: true },
 });
 
 export const logSchema = new mongoose.Schema({
@@ -16,5 +16,3 @@ export const logSchema = new mongoose.Schema({
   count: Number,
   log: [{ type: mongoose.Schema.Types.ObjectId, ref: "Exercise" }],
 });
-
-// module.exports = { exerciseSchema, userSchema, logSchema };

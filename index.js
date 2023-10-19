@@ -1,16 +1,21 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { json, urlencoded } from "express";
-import mongoose, { connect } from "mongoose";
-import { exerciseSchema } from "./schema.js";
+import mongoose, { connect, mongo } from "mongoose";
+import path from "path";
+import { fileURLToPath } from "url";
+import { exerciseSchema, userSchema } from "./schema.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 dotenv.config();
 
 connect(process.env["MONGO_URI"], {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
   .catch((error) => {
     console.error(error);
     throw error;
@@ -19,7 +24,8 @@ connect(process.env["MONGO_URI"], {
     console.log("Connected to mongodb");
   });
 
-const exercise = mongoose.model("Exercise", exerciseSchema);
+const Exercise = mongoose.model("Exercise", exerciseSchema);
+const User = mongoose.model("User", userSchema);
 
 app.use(cors());
 
@@ -30,6 +36,26 @@ app.use(urlencoded({ extended: false }));
 app.use(express.static("public"));
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
+});
+
+app.post("/api/users", async (req, res) => {
+  const { username } = req.body;
+  // const existing = await User.findOne({ name: username }).exec();
+  const existing = await User.findOne({ username });
+  if (existing) {
+    return res.json({ error: "Duplicate user" });
+  }
+
+  const user = new User({ username });
+  user
+    .save()
+    .then((data) => {
+      console.dir(user.toJSON());
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  res.json({ username: user.username, _id: user._id });
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
