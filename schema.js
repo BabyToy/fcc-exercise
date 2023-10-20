@@ -1,18 +1,24 @@
-import mongoose from "mongoose";
+import { Schema, model } from "mongoose";
 
-export const exerciseSchema = new mongoose.Schema({
-  username: String,
+const exerciseSchema = new Schema({
+  user: { type: Schema.ObjectId, ref: "User" },
   description: String,
   duration: Number,
   date: Date,
 });
 
-export const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
   username: { type: String, unique: true },
 });
 
-export const logSchema = new mongoose.Schema({
+const logSchema = new Schema({
   username: String,
   count: Number,
-  log: [{ type: mongoose.Schema.Types.ObjectId, ref: "Exercise" }],
+  log: [{ type: Schema.Types.ObjectId, ref: "Exercise" }],
 });
+
+const Exercise = model("Exercise", exerciseSchema);
+const User = model("User", userSchema);
+const Log = model("Log", logSchema);
+
+export { Exercise, User, Log, exerciseSchema };

@@ -1,10 +1,10 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { json, urlencoded } from "express";
-import mongoose, { connect, mongo } from "mongoose";
+import { connect } from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
-import { exerciseSchema, userSchema } from "./schema.js";
+import { Exercise, User } from "./schema.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,9 +24,6 @@ connect(process.env["MONGO_URI"], {
     console.log("Connected to mongodb");
   });
 
-const Exercise = mongoose.model("Exercise", exerciseSchema);
-const User = mongoose.model("User", userSchema);
-
 app.use(cors());
 
 app.use(cors());
@@ -36,6 +33,38 @@ app.use(urlencoded({ extended: false }));
 app.use(express.static("public"));
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
+});
+
+app.post("/api/users/:_id/exercises", async (req, res) => {
+  const { _id } = req.params;
+  const { description, duration: durationRaw, date: dateRaw } = req.body;
+
+  if (!(await User.findById(_id))) {
+    return res.json({ error: "user not found" });
+  }
+  const date = dateRaw ? new Date(dateRaw) : new Date();
+  if (date.toString() === "Invalid date") {
+    return res.json({ error: "invalid date" });
+  }
+  const duration = parseInt(durationRaw, 10);
+  if (isNaN(duration)) {
+    return res.json({ error: "invalid duration" });
+  }
+
+  if (!description) {
+    return res.json({ error: "empty description" });
+  }
+
+  const exercise = new Exercise({ user: _id, description, date, duration });
+  exercise
+    .save()
+    .then((data) => {
+      console.dir(data.toJSON());
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  res.json(exercise.toJSON());
 });
 
 app.get("/api/users", async (req, res) => {
@@ -49,7 +78,6 @@ app.get("/api/users", async (req, res) => {
 
 app.post("/api/users", async (req, res) => {
   const { username } = req.body;
-  // const existing = await User.findOne({ name: username }).exec();
   const existing = await User.findOne({ username });
   if (existing) {
     return res.json({ error: "Duplicate user" });
@@ -59,7 +87,7 @@ app.post("/api/users", async (req, res) => {
   user
     .save()
     .then((data) => {
-      console.dir(user.toJSON());
+      console.dir(data.toJSON());
     })
     .catch((err) => {
       console.error(err);
