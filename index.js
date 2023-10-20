@@ -31,17 +31,49 @@ app.use(json());
 app.use(urlencoded({ extended: false }));
 
 app.use(express.static("public"));
+
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
 app.get("/api/users/:_id/logs", async (req, res) => {
+  const { from, to, limit } = req.query;
   const { _id } = req.params;
   if (!_id) {
     return res.json({ error: "user required" });
   }
-  const log = (await Exercise.find({ user: _id }).lean());
-  res.json(Array.from(log));
+
+  const fromDate = new Date(from);
+  const toDate = new Date(to);
+
+  const maxCount = parseInt(limit, 10);
+  const query = { user: _id };
+  if (!isNaN(fromDate)) {
+    if (!query.date) {
+      query.date = {};
+    }
+    query.date.$gte = from;
+  }
+  if (!isNaN(toDate)) {
+    if (!query.date) {
+      query.date = {};
+    }
+    query.date.$lte = to;
+  }
+
+  const logs = await Exercise.find(query)
+    .limit(isNaN(maxCount) ? 0 : maxCount)
+    .populate("user")
+    .lean();
+  const exercises = logs.map((log) => {
+    return {
+      description: log.description,
+      duration: log.duration,
+      date: log.date.toString(),
+      username: log.user.username,
+    };
+  });
+  res.json({ count: exercises.length, log: exercises });
 });
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
