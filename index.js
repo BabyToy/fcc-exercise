@@ -35,8 +35,13 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
-app.get("/api/users/_id/exercises", async (req, res) => {
-  res.send("under construction");
+app.get("/api/users/:_id/logs", async (req, res) => {
+  const { _id } = req.params;
+  if (!_id) {
+    return res.json({ error: "user required" });
+  }
+  const log = (await Exercise.find({ user: _id }).lean());
+  res.json(Array.from(log));
 });
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
