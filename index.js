@@ -99,9 +99,6 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   const exercise = new Exercise({ user: _id, description, date, duration });
   await exercise
     .save()
-    .then((data) => {
-      console.dir(data.toJSON());
-    })
     .catch((err) => {
       console.error(err);
     });
@@ -129,9 +126,6 @@ app.post("/api/users", async (req, res) => {
   const user = new User({ username });
   user
     .save()
-    .then((data) => {
-      console.dir(data.toJSON());
-    })
     .catch((err) => {
       console.error(err);
     });
