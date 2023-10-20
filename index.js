@@ -72,7 +72,16 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       username: log.user.username,
     };
   });
-  res.json({ count: exercises.length, log: exercises });
+  const user = {};
+  if (exercises.length > 0) {
+    user.username = logs[0].user.username;
+    user._id = logs[0].user._id;
+  }
+  res.json({
+    ...user,
+    count: exercises.length,
+    log: exercises,
+  });
 });
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
@@ -97,11 +106,9 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 
   // const exercise = new Exercise({ description, date, duration });
   const exercise = new Exercise({ user: _id, description, date, duration });
-  await exercise
-    .save()
-    .catch((err) => {
-      console.error(err);
-    });
+  await exercise.save().catch((err) => {
+    console.error(err);
+  });
   const log = await Exercise.findById(exercise._id).populate("user").lean();
   res.json(log);
   // res.json({ ...exercise.toJSON(), username: log.user.username });
@@ -124,11 +131,9 @@ app.post("/api/users", async (req, res) => {
   }
 
   const user = new User({ username });
-  user
-    .save()
-    .catch((err) => {
-      console.error(err);
-    });
+  user.save().catch((err) => {
+    console.error(err);
+  });
   res.json({ username: user.username, _id: user._id });
 });
 
