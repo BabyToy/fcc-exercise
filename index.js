@@ -35,6 +35,10 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
+app.get("/api/users/_id/exercises", async (req, res) => {
+  res.send("under construction");
+});
+
 app.post("/api/users/:_id/exercises", async (req, res) => {
   const { _id } = req.params;
   const { description, duration: durationRaw, date: dateRaw } = req.body;
@@ -55,8 +59,9 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     return res.json({ error: "empty description" });
   }
 
+  // const exercise = new Exercise({ description, date, duration });
   const exercise = new Exercise({ user: _id, description, date, duration });
-  exercise
+  await exercise
     .save()
     .then((data) => {
       console.dir(data.toJSON());
@@ -64,7 +69,8 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     .catch((err) => {
       console.error(err);
     });
-  res.json(exercise.toJSON());
+  const log = await Exercise.findById(exercise._id).populate("user").exec();
+  res.json({ ...exercise.toJSON(), username: log.user.username });
 });
 
 app.get("/api/users", async (req, res) => {
