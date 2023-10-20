@@ -109,8 +109,17 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   await exercise.save().catch((err) => {
     console.error(err);
   });
-  const log = await Exercise.findById(exercise._id).populate("user").lean();
-  res.json(log);
+  const [log, user] = await Promise.all([
+    Exercise.findById(exercise._id).lean(),
+    User.findById(_id).lean(),
+  ]);
+  res.json({
+    ...user,
+    description: log.description,
+    duration: log.duration,
+    date: log.date.toDateString(),
+  });
+  // res.json(log);
   // res.json({ ...exercise.toJSON(), username: log.user.username });
 });
 
