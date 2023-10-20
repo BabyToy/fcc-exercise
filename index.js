@@ -26,9 +26,8 @@ connect(process.env["MONGO_URI"], {
 
 app.use(cors());
 
-app.use(cors());
+app.use(urlencoded({ extended: true }));
 app.use(json());
-app.use(urlencoded({ extended: false }));
 
 app.use(express.static("public"));
 
