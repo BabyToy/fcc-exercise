@@ -114,13 +114,12 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     User.findById(_id).lean(),
   ]);
   res.json({
-    ...user,
+    _id: user._id,
+    username: user.username,
     description: log.description,
     duration: log.duration,
-    date: log.date.toDateString(),
+    date: new Date(log.date).toDateString(),
   });
-  // res.json(log);
-  // res.json({ ...exercise.toJSON(), username: log.user.username });
 });
 
 app.get("/api/users", async (req, res) => {
